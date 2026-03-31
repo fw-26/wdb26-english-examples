@@ -18,4 +18,3 @@ CMD ["sh", "-c", "if [ \"$MODE\" = 'development' ]; then \
     uvicorn app.main:app --host 0.0.0.0 --port 8080 --proxy-headers --forwarded-allow-ips=\"*\"; \
 fi"]
 
-#CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8080"]

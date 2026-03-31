@@ -1,0 +1,8 @@
+
+@apiUrl = https://wdb26-english-examples-deployment-testing.2.rahtiapp.fi
+
+GET {{apiUrl}}/api/ip
+
+### 
+
+GET {{apiUrl}}

@@ -28,10 +28,11 @@ def api_ip(request: Request):
     # f-string concatenation
     return { "ip": request.client.host }
 
+'''
 @app.get("/ip", response_class=HTMLResponse)
 def html_ip(request: Request):
     return f"<h1>Your IP is {request.client.host}</h1>"
-
+'''
 
 
 
