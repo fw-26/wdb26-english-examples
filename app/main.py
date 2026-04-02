@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from app.db import get_conn
 
 app = FastAPI()
 
@@ -17,8 +18,11 @@ app.add_middleware(
 # Main route for this API
 @app.get("/")
 def read_root(): 
-    # f-string concatenation
-    return { "msg": f"Hotel API!" }
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("SELECT version() ")
+        result = cur.fetchone()
+
+    return { "msg": f"Hotel API!", "db_status": result }
 
 # List all rooms 
 @app.get("/rooms")
