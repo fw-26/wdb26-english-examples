@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.db import get_conn, create_schema
 
 app = FastAPI()
 
@@ -15,32 +14,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-create_schema()
+my_name = "Fredde"
 
 # Main route for this API
 @app.get("/")
 def read_root(): 
-    with get_conn() as conn, conn.cursor() as cur:
-        cur.execute("SELECT version() ")
-        result = cur.fetchone()
+    # f-string concatenation
+    return { "msg": f"Hello {my_name}"}
 
-    return { "msg": f"Hotel API!", "db_status": result }
+# What is my ip 
+@app.get("/api/ip")
+def api_ip(request: Request): 
+    # f-string concatenation
+    return { "ip": request.client.host }
 
-# List all rooms 
-@app.get("/rooms")
-def get_rooms(): 
-    rooms = [
-        { "room_number": 101, "room_type": "single room", "price": 80 },
-        { "room_number": 202, "room_type": "double room", "price": 120 },
-        { "room_number": 404, "room_type": "suite", "price": 500 }
-    ]
-    return rooms
-
-# Create booking
-@app.post("/bookings")
-def create_booking():
-    return { "msg": "Booking created!"}
-
+'''
+@app.get("/ip", response_class=HTMLResponse)
+def html_ip(request: Request):
+    return f"<h1>Your IP is {request.client.host}</h1>"
+'''
 
 
 
