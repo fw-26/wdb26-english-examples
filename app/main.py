@@ -36,21 +36,24 @@ def read_root():
 
     return { "msg": f"Hotel API!", "db_status": result }
 
-# if-statements
-@app.get("/if/{term}")
-def if_test(term: str):
-    msg = "Default msg"
 
-    if (term == "hello" 
-        or term == "hi"):
-        msg = "Hello yourself!"
-    elif (term == "hej" or term == "moi") and 1 == 0:
-        msg = "Hej på dig!" 
-    else:
-        msg = f"I don't understand {term}"
-
-    return { "msg": msg}
-
+# List all guests 
+@app.get("/guests")
+def get_guests(): 
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("""
+            SELECT 
+                g.*,
+                (SELECT count(*) 
+                    FROM bookings
+                    WHERE guest_id = g.id
+                        AND dateto < now()
+                    ) as previous_visits
+            FROM guests g    
+            ORDER BY g.lastname
+        """)
+        guests = cur.fetchall()
+    return guests
 
 # List all rooms 
 @app.get("/rooms")
@@ -77,7 +80,24 @@ def get_one_room(id: int):
 def get_bookings(): 
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("""
-           SELECT * FROM bookings         
+            SELECT 
+                r.room_number,
+                g.firstname || ' ' || g.lastname AS guest_name,
+                b.dateto - b.datefrom AS nights,
+                r.price AS price_per_night,
+                (b.dateto - b.datefrom) * r.price AS gross_price,
+                CASE
+                    WHEN b.dateto - b.datefrom >= 7 THEN 
+                        (b.dateto - b.datefrom) * r.price * 0.8
+                    ELSE (b.dateto - b.datefrom) * r.price
+                END AS total_price,
+                b.*
+            FROM bookings b
+            INNER JOIN rooms r
+                ON r.id = b.room_id
+            INNER JOIN guests g
+                ON g.id = b.guest_id
+            ORDER BY b.id DESC        
         """)
         b = cur.fetchall()
     return b
