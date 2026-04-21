@@ -9,6 +9,9 @@ def create_schema():
     with get_conn() as conn, conn.cursor() as cur:
         # Create the schema
         cur.execute("""
+            -- Add pgcrypto
+            CREATE EXTENSION IF NOT EXISTS pgcrypto;
+                    
             ----------
             -- ROOMS
             ----------
@@ -32,6 +35,7 @@ def create_schema():
                 address VARCHAR,
                 created_at TIMESTAMP DEFAULT now()
             );
+            ALTER TABLE guests ADD COLUMN IF NOT EXISTS api_key VARCHAR DEFAULT encode(gen_random_bytes(32), 'hex');
 
             ----------
             -- Bookings
