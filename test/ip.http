@@ -1,5 +1,5 @@
 
-@apiUrl = https://wdb26-english-examples-deployment-testing.2.rahtiapp.fi
+@apiUrl = {{$dotenv PRODUCTION_URL}}
 
 GET {{apiUrl}}/api/ip
 

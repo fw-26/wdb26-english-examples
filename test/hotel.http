@@ -1,4 +1,5 @@
 @apiUrl = http://127.0.0.1:8080
+@api_key = {{$dotenv API_KEY}}
 
 GET {{apiUrl}}
 
@@ -15,6 +16,7 @@ GET {{apiUrl}}/bookings
 ### Create booking
 POST {{apiUrl}}/bookings
 Content-Type: application/json
+X-API-Key: {{api_key}}
 
 {
     "room_id": 2,
@@ -22,3 +24,13 @@ Content-Type: application/json
     "datefrom": "2026-05-01",
     "dateto": "2026-05-05"
 }
+
+### UPDATE booking
+PUT {{apiUrl}}/bookings/15
+Content-Type: application/json
+X-API-Key: {{api_key}}
+
+{
+    "stars": 5
+}
+

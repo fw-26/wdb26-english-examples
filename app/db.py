@@ -50,7 +50,8 @@ def create_schema():
                 created_at TIMESTAMP DEFAULT now()
             );
                     
-            ALTER TABLE bookings ALTER COLUMN dateto SET DEFAULT now()::date+1
+            ALTER TABLE bookings ALTER COLUMN dateto SET DEFAULT now()::date+1;
+            ALTER TABLE bookings ADD COLUMN IF NOT EXISTS stars INT
 
 
         """)

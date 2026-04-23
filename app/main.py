@@ -43,6 +43,10 @@ class Booking(BaseModel):
     dateto: date
     info: str
 
+# Data model for bookings
+class BookingUpdate(BaseModel):
+    stars: int
+
 # Main route for this API
 @app.get("/")
 def read_root(): 
@@ -147,6 +151,25 @@ def create_booking(booking: Booking, guest: dict = Depends(validate_key)):
         "msg": "Booking created!", 
         "id": new_booking['id'],
         "room_id": new_booking['room_id']
+    }
+
+# Update booking
+@app.put("/bookings/{id}")
+def create_booking(id: int, booking: BookingUpdate, guest: dict = Depends(validate_key)):
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(""" 
+            UPDATE bookings SET
+                stars = %s
+            WHERE id = %s 
+                AND guest_id = %s
+            RETURNING *
+        """, [booking.stars, id, guest['id']])
+        updated_booking = cur.fetchone()
+        if not updated_booking:
+            raise HTTPException(status_code=404, detail={"error": "Booking not found!"})
+        
+    return { 
+        "msg": "booking updated", "id": updated_booking['id']
     }
 
 
