@@ -53,5 +53,42 @@ def create_schema():
             ALTER TABLE bookings ALTER COLUMN dateto SET DEFAULT now()::date+1;
             ALTER TABLE bookings ADD COLUMN IF NOT EXISTS stars INT
 
-
         """)
+        print("DB Schema created")
+
+        cur.execute("""
+            DROP VIEW IF EXISTS guests_view;
+            CREATE VIEW guests_view AS
+                SELECT 
+                    g.id, 
+                    g.firstname, 
+                    g.lastname, 
+                    COALESCE(g.address, ''),
+                    g.firstname || ' ' || g.lastname AS guest_name,
+                    (SELECT count(*) 
+                        FROM bookings
+                        WHERE guest_id = g.id
+                            AND dateto < now()
+                        ) as previous_visits
+                FROM guests g;
+
+            CREATE OR REPLACE VIEW bookings_view AS
+                SELECT 
+                    r.room_number,
+                    g.firstname || ' ' || g.lastname AS guest_name,
+                    b.dateto - b.datefrom AS nights,
+                    r.price AS price_per_night,
+                    (b.dateto - b.datefrom) * r.price AS gross_price,
+                    CASE
+                        WHEN b.dateto - b.datefrom >= 7 THEN 
+                            (b.dateto - b.datefrom) * r.price * 0.8
+                        ELSE (b.dateto - b.datefrom) * r.price
+                    END AS total_price,
+                    b.*
+                FROM bookings b
+                INNER JOIN rooms r
+                    ON r.id = b.room_id
+                INNER JOIN guests g
+                    ON g.id = b.guest_id
+        """)
+        print("DB Views created")

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import date
 from app.db import get_conn, create_schema
+from markupsafe import escape
 
 app = FastAPI()
 
@@ -62,15 +63,8 @@ def read_root():
 def get_guests(): 
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("""
-            SELECT 
-                g.*,
-                (SELECT count(*) 
-                    FROM bookings
-                    WHERE guest_id = g.id
-                        AND dateto < now()
-                    ) as previous_visits
-            FROM guests g    
-            ORDER BY g.lastname
+            SELECT * FROM guests_view    
+            ORDER BY lastname
         """)
         guests = cur.fetchall()
     return guests
@@ -101,25 +95,9 @@ def get_bookings(guest: dict = Depends(validate_key)):
     print(guest)
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("""
-            SELECT 
-                r.room_number,
-                g.firstname || ' ' || g.lastname AS guest_name,
-                b.dateto - b.datefrom AS nights,
-                r.price AS price_per_night,
-                (b.dateto - b.datefrom) * r.price AS gross_price,
-                CASE
-                    WHEN b.dateto - b.datefrom >= 7 THEN 
-                        (b.dateto - b.datefrom) * r.price * 0.8
-                    ELSE (b.dateto - b.datefrom) * r.price
-                END AS total_price,
-                b.*
-            FROM bookings b
-            INNER JOIN rooms r
-                ON r.id = b.room_id
-            INNER JOIN guests g
-                ON g.id = b.guest_id
-            WHERE b.guest_id = %s
-            ORDER BY b.id DESC        
+            SELECT * FROM bookings_view
+            WHERE guest_id = %s
+            ORDER BY id DESC        
         """, [guest['id']])
         b = cur.fetchall()
     return b
@@ -143,7 +121,7 @@ def create_booking(booking: Booking, guest: dict = Depends(validate_key)):
             guest['id'],
             booking.datefrom,
             booking.dateto,
-            booking.info
+            escape(booking.info)
         ])
         new_booking = cur.fetchone()
         

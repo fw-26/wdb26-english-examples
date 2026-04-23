@@ -4,6 +4,9 @@
 GET {{apiUrl}}
 
 ### 
+GET {{apiUrl}}/guests
+
+### 
 GET {{apiUrl}}/rooms
 
 ### 
